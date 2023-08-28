@@ -1,0 +1,146 @@
+#oc new-app nginx:1.20-ubi9~https://github.com/sclorg/nginx-container.git --context-dir=1.20/test/test-app/ --dry-run=true -o yaml > ~/Lavoro/Esercito/demo/create-nginx-deployment.yaml (mount e volumemount messi a mano)
+
+apiVersion: v1
+items:
+- apiVersion: image.openshift.io/v1
+  generation: 0
+  image:
+    dockerImageMetadata: null
+    metadata:
+      creationTimestamp: null
+  kind: ImageStreamTag
+  lookupPolicy:
+    local: false
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      openshift.io/imported-from: nginx-container:latest
+    creationTimestamp: null
+    labels:
+      app: nginx-container
+      app.kubernetes.io/component: nginx-container
+      app.kubernetes.io/instance: nginx-container
+    name: nginx-container:latest
+  tag:
+    annotations: null
+    from:
+      kind: DockerImage
+      name: nginx-container:latest
+    generation: null
+    importPolicy: {}
+    name: latest
+    referencePolicy:
+      type: ""
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: nginx-container
+      app.kubernetes.io/component: nginx-container
+      app.kubernetes.io/instance: nginx-container
+    name: nginx-container
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: nginx-container:latest
+    postCommit: {}
+    resources: {}
+    source:
+      contextDir: 1.20/test/test-app/
+      git:
+        uri: https://github.com/sclorg/nginx-container.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: nginx:1.20-ubi9
+          namespace: testproject
+      type: Source
+    triggers:
+    - github:
+        secret: cyuehAM5RMsXMGUKFsdd
+      type: GitHub
+    - generic:
+        secret: rDlm-Tzv1IwR-ngLGja1
+      type: Generic
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+  status:
+    lastVersion: 0
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"nginx-container:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"nginx-container\")].image"}]'
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: nginx-container
+      app.kubernetes.io/component: nginx-container
+      app.kubernetes.io/instance: nginx-container
+    name: nginx-container
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        deployment: nginx-container
+    strategy: {}
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          deployment: nginx-container
+      spec:
+        containers:
+        - image: ' '
+          name: nginx-container
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+          resources: {}
+          volumeMounts:
+          - name: nginx-config-volume
+            mountPath: /etc/nginx/conf.d
+        volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: nginx-container
+      app.kubernetes.io/component: nginx-container
+      app.kubernetes.io/instance: nginx-container
+    name: nginx-container
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      deployment: nginx-container
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}
